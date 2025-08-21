@@ -1,0 +1,27 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Admin Dashboard - ModMarket{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Welcome, {{ user.username }} 👋</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">Categories</h2>
+        <p class="text-gray-600">Manage all categories here.</p>
+        <a href="{% url 'admin_category_list' %}" class="mt-3 inline-block text-purple-600 hover:underline">View</a>
+    </div>
+
+    <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">Products</h2>
+        <p class="text-gray-600">Review and manage products.</p>
+        <a href="{% url 'admin_product_list' %}" class="mt-3 inline-block text-purple-600 hover:underline">View</a>
+    </div>
+
+    <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-lg font-semibold mb-2">Developers</h2>
+        <p class="text-gray-600">See all developer profiles.</p>
+        <a href="{% url 'admin_developer_list' %}" class="mt-3 inline-block text-purple-600 hover:underline">View</a>
+    </div>
+</div>
+{% endblock %}

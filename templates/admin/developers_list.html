@@ -1,0 +1,39 @@
+{% extends 'admin_base.html' %}
+{% block title %}Developers{% endblock %}
+
+{% block content %}
+<div class="w-full mx-auto bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">Developers</h1>
+    <table class="w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="border border-gray-300 px-4 py-2">Username</th>
+                <th class="border border-gray-300 px-4 py-2">Company</th>
+                <th class="border border-gray-300 px-4 py-2">User ID</th>
+                <th class="border border-gray-300 px-4 py-2">Object ID</th>
+                <th class="border border-gray-300 px-4 py-2">Verified</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in developers %}
+            <tr class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-2">{{ d.user.username|default:'N/A' }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ d.company_name|default:'anonymous' }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ d.user_id }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ d.id }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ d.is_verified|yesno:"Yes,No" }}</td>
+                <td class="border border-gray-300 px-4 py-2 space-x-4 flex items-center justify-between">
+                    <a href="{% url 'admin_developer_view' d.id %}" class="text-green-600 hover:underline">View</a>
+                    <a href="{% url 'admin_developer_delete' d.id %}" class="text-red-600 hover:underline">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center py-4 text-gray-500">No developers found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

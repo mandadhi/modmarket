@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Product - ModMarket{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-6">
+    <div class="flex justify-center">
+        <div class="w-full lg:w-4/5">
+            <div class="bg-white shadow-md rounded-xl border">
+                <!-- Card Header -->
+                <div class="border-b px-6 py-4">
+                    <h3 class="text-xl font-semibold flex items-center gap-2">
+                        <i class="fas fa-upload"></i> Upload New Product
+                    </h3>
+                    <p class="text-gray-500 text-sm mt-1">Share your project with the community</p>
+                </div>
+
+                <!-- Card Body -->
+                <div class="p-6">
+                    <form method="post" enctype="multipart/form-data" class="space-y-6">
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <h5 class="font-medium text-lg">Basic Information</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2">
+                                {{ form.title|as_crispy_field }}
+                            </div>
+                            <div>
+                                {{ form.version|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        {{ form.description|as_crispy_field }}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{ form.category|as_crispy_field }}
+                            {{ form.product_type|as_crispy_field }}
+                        </div>
+
+                        {{ form.tags|as_crispy_field }}
+
+                        <!-- Licensing -->
+                        <h5 class="font-medium text-lg">Licensing</h5>
+                        {{ form.license|as_crispy_field }}
+                        {{ form.license_file|as_crispy_field }}
+
+                        <!-- Pricing -->
+                        <h5 class="font-medium text-lg">Pricing</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center space-x-2">
+                                {{ form.is_free }}
+                                <label for="{{ form.is_free.id_for_label }}" class="text-sm font-medium text-gray-700">
+                                    This is a free product
+                                </label>
+                            </div>
+                            <div>
+                                {{ form.price|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <!-- Media -->
+                        <h5 class="font-medium text-lg">Media</h5>
+                        {{ form.thumbnail|as_crispy_field }}
+
+                        <!-- Files -->
+                        <h5 class="font-medium text-lg">Files</h5>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+                            <i class="fas fa-info-circle"></i>
+                            <strong> File Requirements:</strong>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>Main file: Your project ZIP or APK file</li>
+                                <li>Demo file: Optional demo or sample</li>
+                                <li>Documentation: README, manual, or guide</li>
+                                <li>Maximum file size: 100MB per file</li>
+                            </ul>
+                        </div>
+
+                        {{ file_formset.management_form }}
+                        <div id="file-formset" class="space-y-3">
+                            {% for form in file_formset %}
+                            <div class="file-form border rounded-lg p-4">
+                                {{ form.as_p }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3">
+                            <button type="button" id="add-file-btn"
+                                class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                                <i class="fas fa-plus"></i> Add File
+                            </button>
+                        </div>
+
+                        <!-- Empty form template (hidden) -->
+                        <div id="empty-form" class="hidden">
+                            <div class="file-form border rounded-lg p-4 relative">
+                                <button title="delete" type="button"
+                                    class="remove-form absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {{ file_formset.empty_form.as_p }}
+                            </div>
+                        </div>
+
+
+                        <!-- Legal Notice -->
+                        <div class="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-sm text-yellow-800">
+                            <h6 class="font-semibold flex items-center gap-2">
+                                <i class="fas fa-exclamation-triangle"></i> Legal Notice
+                            </h6>
+                            <p class="mt-2">By uploading content to ModMarket, you confirm that:</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>Make sure You check the delete option for products if you don’t want the selected
+                                    file to upload then check whether the checkbox is checked else it uploads</li>
+                                <li>Upload in Zip file</li>
+                                <li>Given Four fields for four purposes upload mainly Zip files to group a single type
+                                    files</li>
+                                <li>You own the rights to this content or have permission to distribute it</li>
+                                <li>The content is for educational purposes only</li>
+                                <li>You comply with all applicable laws and regulations</li>
+                                <li>Modified APKs are legal modifications for educational use</li>
+                            </ul>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="flex justify-between items-center pt-4">
+                            <a href="{% url 'developer_dashboard' %}"
+                                class="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 flex items-center gap-2">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit"
+                                class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-2">
+                                <i class="fas fa-upload"></i> Upload Product
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // ===== Price toggle =====
+        const isFreeCheckbox = document.getElementById('{{ form.is_free.id_for_label }}');
+        const priceField = document.querySelector('[name="price"]').closest('.form-group');
+
+        function togglePriceField() {
+            priceField.style.display = isFreeCheckbox.checked ? 'none' : 'block';
+        }
+        isFreeCheckbox.addEventListener('change', togglePriceField);
+        togglePriceField();
+
+        // ===== File formset delete checkbox logic =====
+        function bindDeleteLogic(formDiv) {
+            const fileInput = formDiv.querySelector('input[type="file"]');
+            const deleteCheckbox = formDiv.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteCheckbox) {
+                deleteCheckbox.checked = true;
+                if (fileInput) {
+                    fileInput.addEventListener('change', function () {
+                        deleteCheckbox.checked = !fileInput.value;
+                    });
+                }
+            }
+        }
+
+        // ===== Remove Form (❌ button) =====
+        function bindRemoveButton(formDiv) {
+            const removeBtn = formDiv.querySelector('.remove-form');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function () {
+                    formDiv.remove();
+                    // update TOTAL_FORMS count
+                    const totalFormsInput = document.getElementById('id_{{ file_formset.prefix }}-TOTAL_FORMS');
+                    totalFormsInput.value = document.querySelectorAll('#file-formset .file-form').length;
+                });
+            }
+        }
+
+        // Bind to existing forms
+        document.querySelectorAll('#file-formset .file-form').forEach(function (div) {
+            bindDeleteLogic(div);
+            bindRemoveButton(div);
+        });
+
+        // ===== Dynamic Add File =====
+        const addBtn = document.getElementById('add-file-btn');
+        const formsetDiv = document.getElementById('file-formset');
+        const totalFormsInput = document.getElementById('id_{{ file_formset.prefix }}-TOTAL_FORMS');
+        const emptyFormHtml = document.getElementById('empty-form').innerHTML;
+
+        addBtn.addEventListener('click', function () {
+            let formCount = parseInt(totalFormsInput.value);
+            let newFormHtml = emptyFormHtml.replace(/__prefix__/g, formCount);
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newFormHtml;
+            const newFormDiv = tempDiv.firstElementChild;
+
+            formsetDiv.appendChild(newFormDiv);
+            totalFormsInput.value = formCount + 1;
+
+            bindDeleteLogic(newFormDiv);
+            bindRemoveButton(newFormDiv);
+        });
+    });
+</script>
+
+{% endblock %}

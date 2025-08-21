@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Products - ModMarket{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-4">
+    <!-- Search and Filters -->
+    <div class="mb-6">
+        <div class="bg-white shadow rounded-lg">
+            <div class="p-4">
+                <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                    <div class="md:col-span-2">
+                        <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none" 
+                               name="q" placeholder="Search products...">
+                    </div>
+                    <div>
+                        <select name="category" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.category }}" {% if current_category == cat.category|stringformat:"s" %}selected{% endif %}>
+                                    {{ cat.category }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <select name="type" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                            <option value="">All Types</option>
+                            <option value="project" {% if current_type == 'project' %}selected{% endif %}>Project Source</option>
+                            <option value="apk" {% if current_type == 'apk' %}selected{% endif %}>Modified APK</option>
+                            <option value="template" {% if current_type == 'template' %}selected{% endif %}>Template</option>
+                            <option value="plugin" {% if current_type == 'plugin' %}selected{% endif %}>Plugin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select name="price" class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                            <option value="">All Prices</option>
+                            <option value="free" {% if current_price == 'free' %}selected{% endif %}>Free</option>
+                            <option value="paid" {% if current_price == 'paid' %}selected{% endif %}>Paid</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg px-3 py-2 flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="flex justify-between items-center mb-6">
+        <h4 class="text-lg font-semibold">Products ({{ page_obj.paginator.count }} found)</h4>
+        <div class="relative inline-block text-left">
+            <button onclick="document.getElementById('sortMenu').classList.toggle('hidden')" class="border rounded-lg px-3 py-2 text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                Sort by <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <ul id="sortMenu" class="hidden absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50 text-lg">
+                <li><a class="block px-4 py-2 hover:bg-gray-100" href="?{{ querystring }}&sort=-created_at">Newest First</a></li>
+                <li><a class="block px-4 py-2 hover:bg-gray-100" href="?{{ querystring }}&sort=-download_count">Most Downloaded</a></li>
+                <li><a class="block px-4 py-2 hover:bg-gray-100" href="?{{ querystring }}&sort=-rating">Highest Rated</a></li>
+                <li><a class="block px-4 py-2 hover:bg-gray-100" href="?{{ querystring }}&sort=price">Price: Low to High</a></li>
+                <li><a class="block px-4 py-2 hover:bg-gray-100" href="?{{ querhiddenystring }}&sort=-price">Price: High to Low</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for product in items %}
+        <div class="bg-white shadow rounded-lg overflow-hidden flex flex-col h-full">
+            {% if product.thumbnail_path %}
+            <div class="w-full h-60 bg-gray-100 flex items-center justify-center overflow-hidden">
+                <img src="{% url 'serve_thumbnail' product.thumbnail_path %}" class="max-h-full max-w-full object-fill" alt="{{ product.title }}">
+                </div>
+            {% else %}
+                <div class="w-full h-60 bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-image fa-3x text-gray-400"></i>
+                </div>
+            {% endif %}
+            
+            <div class="p-4 flex-1 flex flex-col">
+                <div class="flex justify-between items-start mb-2">
+                    <h6 class="font-semibold text-sm">{{ product.title|truncatechars:40 }}</h6>
+                    <span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">{{ product.product_type }}</span>
+                </div>
+                
+                <p class="text-gray-500 text-sm mb-2 h-10">{{ product.description|truncatechars:80 }}</p>
+                
+                <div class="flex items-center mb-2 mt-2 h-auto">
+                    {% if product.developer.avatar_path %}
+                        <img src="{% url 'serve_avatar' product.developer.avatar_path %}" class="rounded-full w-10 h-10 mr-2" alt="Developer">
+                    {% else %}
+                        <div class="w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center mr-2">
+                            <i class="fas fa-user text-white text-[10px]"></i>
+                        </div>
+                    {% endif %}
+                    <a href="{% url 'developer_profile' product.developer_id %}">
+                    <span class="text-gray-500 font-semibold text-xl">{{ product.developer.user.username }}</span></a>
+                </div>
+                
+                <div class="flex justify-between items-center mb-2 text-yellow-400 text-m">
+                    <small class="text-gray-500 text-lg">Downloads : {{ product.download_count }}</small>
+                </div>
+                
+                <div class="flex justify-between items-center mt-auto">
+                    {% if product.is_free %}
+                        <span class="text-green-600 font-semibold">Free</span>
+                    {% else %}
+                        <span class="font-bold">${{ product.price }}</span>
+                    {% endif %}
+                    <small class="text-gray-500">{{ product.category|join:", " }}</small>
+                </div>
+            </div>
+            
+            <div class="p-3 border-t">
+                <a href="{% url 'product_detail' product.id %}" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm py-2 rounded-lg block text-center">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-10">
+            <i class="fas fa-search fa-3x text-gray-400 mb-3"></i>
+            <h4 class="text-lg font-semibold">No products found</h4>
+            <p class="text-gray-500">Try adjusting your search criteria or browse all products.</p>
+            <a href="{% url 'product_list' %}" class="inline-block mt-3 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">View All Products</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="mt-6">
+        <nav class="flex justify-center">
+            <ul class="inline-flex items-center space-x-1">
+                {% if page_obj.has_previous %}
+                <li>
+                    <a class="px-3 py-1 border rounded hover:bg-gray-100" href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li>
+                            <span class="px-3 py-1 border bg-purple-600 text-white rounded">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li>
+                            <a class="px-3 py-1 border rounded hover:bg-gray-100" href="?{{ request.GET.urlencode }}&page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li>
+                    <a class="px-3 py-1 border rounded hover:bg-gray-100" href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

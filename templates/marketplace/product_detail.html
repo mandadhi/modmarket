@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.title }} - ModMarket{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Product Images -->
+        <div>
+            {% if product.thumbnail_path %}
+            <img src="{% url 'serve_thumbnail' product.thumbnail_path %}" class="w-auto h-auto rounded-lg mb-3 object-cover"
+                alt="{{ product.title }}">
+            {% else %}
+            <div class="bg-gray-100 rounded-lg flex items-center justify-center mb-3 h-[400px]">
+                <i class="fas fa-image fa-5x text-gray-400"></i>
+            </div>
+            {% endif %}
+
+            <!-- Screenshots -->
+            {% if product.screenshots %}
+            <h5 class="mt-4 font-semibold">Screenshots</h5>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {% for file in product.screenshots %}
+                <div class="relative w-full pt-[75%] overflow-hidden rounded-xl">
+                    <a href="#" data-bs-toggle="modal" data-bs-target="#screenshotModal{{ forloop.counter }}">
+                        <img src="{% url 'download_file' file_id=file.path bucket='products' %}"
+                            alt="Screenshot {{ forloop.counter }}"
+                            class="absolute top-0 left-0 w-full h-full object-cover cursor-pointer transition-transform duration-200 hover:scale-105 rounded-lg">
+                    </a>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="screenshotModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content bg-gray-900">
+                            <div class="modal-body p-0">
+                                <img src="{% url 'download_file' file_id=file.path bucket='products' %}"
+                                    alt="Screenshot {{ forloop.counter }}" class="w-full h-auto rounded-md">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Product Info -->
+        <div>
+            <div class="mb-3 space-x-2">
+                <span class="inline-block bg-blue-600 text-white text-sm px-2 py-1 rounded">{{ product.product_type }}</span>
+                {% for cat in product.category %}
+                <span class="inline-block bg-gray-600 text-white text-sm px-2 py-1 rounded">{{ cat }}</span>
+                {% endfor %}
+            </div>
+
+            <h1 class="text-2xl font-bold mb-3">{{ product.title }}</h1>
+
+            <div class="flex items-center mb-3">
+                {% if product.developer_doc.avatar_path %}
+                <img src="{% url 'serve_avatar' product.developer_doc.avatar_path %}"
+                    class="rounded-full w-12 h-12 object-cover mr-3" alt="Developer">
+                {% else %}
+                <div class="rounded-full bg-gray-600 flex items-center justify-center mr-3 w-12 h-12">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <a href="{% url 'developer_profile' product.developer_id %}">
+                    <h6 class="mb-0 font-semibold">{{ product.user_details.username }}</h6>
+                    </a>
+                    {% if product.developer_doc %}
+                    <small class="text-gray-500">{{ product.developer_doc.company_name }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3"><strong>Downloads:</strong> {{ product.download_count }}</div>
+            <div class="mb-3"><strong>Version:</strong> {{ product.version }}</div>
+
+            <div class="mb-3">
+                <strong>License:</strong> {{ product.license_file.filename }}
+                {% if product.license_file %}
+                <a href="{% url 'download_file' file_id=product.license_file.path bucket='license' %}" target="_blank"
+                    class="ml-2 text-blue-600 hover:underline">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {% for file in product.files %}
+                <strong class="block">Files:</strong> {{ file.filename }}
+                <a href="{% url 'download_file' file_id=file.path bucket='products' %}" target="_blank"
+                    class="ml-2 text-blue-600 hover:underline">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                {% if product.is_free %}
+                <h3 class="text-green-600 text-xl font-semibold">Free</h3>
+                {% else %}
+                <h3 class="text-xl font-semibold">${{ product.price }}</h3>
+                {% endif %}
+            </div>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'download_product' product.id %}"
+                class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-lg mb-3 hover:bg-blue-700 transition">
+                <i class="fas fa-download"></i> Download as Zip
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}"
+                class="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-lg mb-3 hover:bg-blue-700 transition">
+                <i class="fas fa-sign-in-alt"></i> Login to Download
+            </a>
+            {% endif %}
+
+            <!-- Tags -->
+            {% if product.tags %}
+            <div class="mb-3">
+                <strong>Tags:</strong>
+                {% for tag in product.tags %}
+                <span class="inline-block bg-gray-200 text-gray-800 text-sm px-2 py-1 rounded mr-1">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="mt-10">
+        <h3 class="text-xl font-semibold mb-3">Description</h3>
+        <div class="bg-white shadow rounded-lg p-4">
+            {{ product.description|linebreaks }}
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="mt-10">
+        <h3 class="text-xl font-semibold mb-3">Reviews</h3>
+
+        {% if product.status == "approved" %}
+            <!-- Add Review Form -->
+            {% if can_review %}
+            <div class="bg-white shadow rounded-lg mb-4">
+                <div class="border-b px-4 py-2">
+                    <h5 class="font-semibold">Write a Review</h5>
+                </div>
+                <div class="p-4">
+                    <form method="post" action="{% url 'add_review' product.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_rating" class="block font-medium">Rating</label>
+                            <select name="rating" id="id_rating" class="w-full border rounded px-2 py-1" required>
+                                <option value="">Select rating</option>
+                                <option value="5">5 Stars - Excellent</option>
+                                <option value="4">4 Stars - Good</option>
+                                <option value="3">3 Stars - Average</option>
+                                <option value="2">2 Stars - Poor</option>
+                                <option value="1">1 Star - Terrible</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_comment" class="block font-medium">Comment</label>
+                            <textarea name="comment" id="id_comment" rows="3" class="w-full border rounded px-2 py-1"
+                                placeholder="Share your experience..."></textarea>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% elif user_review %}
+            <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+                You have already reviewed this product.
+            </div>
+            {% elif not user.is_authenticated %}
+            <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded">
+                <a href="{% url 'login' %}" class="underline">Login</a> to write a review.
+            </div>
+            {% endif %}
+
+            <!-- Reviews List -->
+            {% for review in reviews %}
+            <div class="bg-white shadow rounded-lg mb-3 p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h6 class="font-semibold">{{ review.user.username }}</h6>
+                        <div class="text-yellow-400 mb-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if review.comment %}
+                            <p class="mb-0">{{ review.comment }}</p>
+                        {% endif %}
+                    </div>
+                    <small class="text-gray-500">{{ review.created_at|date:"M d, Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-6">
+                <i class="fas fa-comments fa-3x text-gray-400 mb-3"></i>
+                <h5 class="text-lg font-semibold">No reviews yet</h5>
+                <p class="text-gray-500">Be the first to review this product!</p>
+            </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded">
+                Reviews will be available once the product is approved.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="mt-10">
+        <h3 class="text-xl font-semibold mb-3">Related Products</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for related in related_products %}
+            <div class="bg-white shadow rounded-lg overflow-hidden hover:-translate-y-1 transition-transform">
+                {% if related.thumbnail_path %}
+                <img src="{% url 'serve_thumbnail' related.thumbnail_path %}" class="w-full h-[150px] object-cover"
+                    alt="{{ related.title }}">
+                {% else %}
+                <div class="bg-gray-100 flex items-center justify-center h-[150px]">
+                    <i class="fas fa-image fa-2x text-gray-400"></i>
+                </div>
+                {% endif %}
+                <div class="p-3">
+                    <h6 class="font-semibold">{{ related.title|truncatechars:30 }}</h6>
+                    <div class="flex justify-between items-center mt-2">
+                        {% if related.is_free %}
+                        <span class="text-green-600 font-medium">Free</span>
+                        {% else %}
+                        <span class="font-medium">${{ related.price }}</span>
+                        {% endif %}
+                        <small class="text-gray-500 flex items-center">
+                            <i class="fas fa-download mr-1"></i> {{ related.download_count }}
+                        </small>
+                    </div>
+                </div>
+                <div class="border-t px-3 py-2">
+                    <a href="{{ related.get_absolute_url }}"
+                        class="inline-block w-full text-center border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50 transition">
+                        View
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

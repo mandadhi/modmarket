@@ -1,0 +1,38 @@
+{% extends 'admin_base.html' %}
+{% block title %}Category{% endblock %}
+
+{% block content %}
+<div class="w-full mx-auto bg-white shadow-lg rounded-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Categories</h1>
+        <a href="{% url 'admin_category_add' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">+
+            Add Category</a>
+    </div>
+
+    <table class="w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="border border-gray-300 px-4 py-2">S.NO</th>
+                <th class="border border-gray-300 px-4 py-2">Category</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in categories %}
+            <tr class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-2">{{ forloop.counter }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ c.category }}</td>
+                <td class="border border-gray-300 px-4 py-2 space-x-8 flex items-center justify-between">
+                    <a href="{% url 'admin_category_edit' c.id %}" class="text-yellow-600 hover:underline">Edit</a>
+                    <a href="{% url 'admin_category_delete' c.id %}" class="text-red-600 hover:underline">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center py-4 text-gray-500">No categories found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

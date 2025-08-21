@@ -1,0 +1,13 @@
+{
+  "connector": "chrome",
+  "hints": {
+    "meta-viewport": "off",
+    "meta-charset": "off",
+    "meta-robots": "off",
+    "meta-refresh": "off"
+  },
+  "formatters": [
+    "json",
+    "html"
+  ]
+}

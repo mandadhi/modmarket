@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Developer {{developers.user.username}}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-6">
+
+    <!-- Developer Card -->
+    <div class="bg-white rounded-lg shadow mb-6 p-6 flex items-center gap-4">
+        {% if developers.avatar_path %}
+        <img src="{% url 'serve_avatar' developers.avatar_path %}" alt="Avatar"
+            class="w-20 h-20 rounded-full object-cover">
+        {% else %}
+        <div class="w-20 h-20 rounded-full bg-gray-400"></div>
+        {% endif %}
+        <div>
+            <h4 class="text-xl font-semibold">{{ developers.user.username }}</h4>
+            <p class="text-gray-700">Company: {{ developers.company_name|default:"N/A" }}</p>
+            <p class="text-gray-700">Bio: {{ developers.bio|default:"N/A" }}</p>
+            <p class="text-gray-700">Website:
+                {% if developers.website %}
+                <a href="{{ developers.website }}" target="_blank" class="text-blue-500 underline">{{
+                    developers.website }}</a>
+                {% else %}
+                N/A
+                {% endif %}
+            </p>
+            <p class="text-gray-700">Verified: {{ developers.is_verified|yesno:"Yes,No" }}</p>
+            <p class="text-gray-500 text-sm">Joined: {{ developers.created_at|date:"Y-m-d H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <!-- Filter Buttons -->
+    <div class="flex border-b border-gray-200 mb-6">
+        <button id="btn-approved" class="flex-1 text-center py-2 text-blue-500 border-b-2 border-blue-500 font-semibold"
+            onclick="showProducts('approved', this)">Approved</button>
+        <button id="btn-pending" class="flex-1 text-center py-2 text-gray-500 hover:text-yellow-500"
+            onclick="showProducts('pending', this)">Pending</button>
+        <button id="btn-rejected" class="flex-1 text-center py-2 text-gray-500 hover:text-red-500"
+            onclick="showProducts('rejected', this)">Rejected</button>
+    </div>
+
+
+    <!-- Products Section -->
+    <div id="products-section">
+        <div id="approved" class="space-y-4 hidden">
+            {% if approved_products %}
+            {% for p in approved_products %}
+            <div class="bg-white rounded-lg shadow p-4">
+                <h5 class="font-semibold text-lg">{{ p.title }}</h5>
+                <p class="text-gray-600">Categories: {{ p.category|join:", " }}</p>
+                <p class="text-gray-600">Description: {{ p.description|default:"N/A" }}</p>
+                <p class="text-gray-600">Price: {% if p.is_free %}Free{% else %}{{ p.price }}{% endif %}</p>
+                <a href="{% url 'product_detail' p.id %}">
+                    <button class="flex bg-green-400 rounded-lg shadow-lg px-4 py-1 mt-2">View</button>
+                </a>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-8 bg-gray-100 rounded-lg shadow">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20 13V7a2 2 0 00-2-2h-4V3H10v2H6a2 2 0 00-2 2v6l8 5 8-5z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22v-7" />
+                </svg>
+                <p class="mt-2 text-gray-500 text-lg font-medium">No approved products found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Pending -->
+            <div id="pending" class="space-y-4 hidden">
+                {% if pending_products %}
+                {% for p in pending_products %}
+                <div class="bg-white rounded-lg shadow p-4">
+                    <h5 class="font-semibold text-lg">{{ p.title }}</h5>
+                    <p class="text-gray-600">Categories: {{ p.category|join:", " }}</p>
+                    <p class="text-gray-600">Description: {{ p.description|default:"N/A" }}</p>
+                    <p class="text-gray-600">Price: {% if p.is_free %}Free{% else %}{{ p.price }}{% endif %}</p>
+                    <a href=""><button class="flex bg-yellow-400 rounded-lg shadow-lg px-4 py-1 mt-2">View</button></a>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-8 bg-gray-100 rounded-lg shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20 13V7a2 2 0 00-2-2h-4V3H10v2H6a2 2 0 00-2 2v6l8 5 8-5z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22v-7" />
+                    </svg>
+                    <p class="mt-2 text-gray-500 text-lg font-medium">No pending products found.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Rejected -->
+                <div id="rejected" class="space-y-4 hidden">
+                    {% if rejected_products %}
+                    {% for p in rejected_products %}
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <h5 class="font-semibold text-lg">{{ p.title }}</h5>
+                        <p class="text-gray-600">Type: {{ p.file_type_label }}</p>
+                        <p class="text-gray-600">Categories: {{ p.category|join:", " }}</p>
+                        <p class="text-gray-600">Description: {{ p.description|default:"N/A" }}</p>
+                        <p class="text-gray-600">Price: {% if p.is_free %}Free{% else %}{{ p.price }}{% endif %}</p>
+                        <a href=""><button class="flex bg-red-400 rounded-lg shadow-lg px-4 py-1 mt-2">View</button></a>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-8 bg-gray-100 rounded-lg shadow">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 13V7a2 2 0 00-2-2h-4V3H10v2H6a2 2 0 00-2 2v6l8 5 8-5z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22v-7" />
+                        </svg>
+                        <p class="mt-2 text-gray-500 text-lg font-medium">No rejected products found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showProducts(status, btn) {
+        document.querySelectorAll('#approved, #pending, #rejected').forEach(div => div.classList.add('hidden'));
+
+        document.getElementById(status).classList.remove('hidden');
+        document.querySelectorAll('[id^="btn-"]').forEach(b => {
+            b.classList.remove('text-blue-500', 'text-yellow-500', 'text-red-500', 'border-b-2', 'border-blue-500', 'border-yellow-500', 'border-red-500', 'font-semibold');
+            b.classList.add('text-gray-500');
+        });
+        btn.classList.remove('text-gray-500');
+        btn.classList.add('font-semibold', 'border-b-2');
+        if (status === 'approved') btn.classList.add('text-blue-500', 'border-blue-500');
+        else if (status === 'pending') btn.classList.add('text-yellow-500', 'border-yellow-500');
+        else if (status === 'rejected') btn.classList.add('text-red-500', 'border-red-500');
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        const approvedBtn = document.getElementById('btn-approved');
+        showProducts('approved', approvedBtn);
+    });
+</script>
+{% endblock %}

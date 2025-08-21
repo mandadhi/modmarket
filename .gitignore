@@ -1,0 +1,45 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+
+# Environment
+.env
+.venv/
+env/
+venv/
+
+# Django
+*.log
+*.pot
+*.pyc
+*.sqlite3
+db.sqlite3
+/staticfiles/
+media/
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+local_settings.py
+
+# MongoDB dumps (if any)
+*.bson
+*.json
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node (if you have frontend with React/Vite)
+node_modules/
+dist/

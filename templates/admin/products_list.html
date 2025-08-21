@@ -1,0 +1,37 @@
+{% extends 'admin_base.html' %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-2xl font-bold mb-4">Products</h1>
+    <table class="w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="border border-gray-300 px-4 py-2">Title</th>
+                <th class="border border-gray-300 px-4 py-2">Status</th>
+                <th class="border border-gray-300 px-4 py-2">Price</th>
+                <th class="border border-gray-300 px-4 py-2">Downloads</th>
+                <th class="border border-gray-300 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr class="hover:bg-gray-50">
+                <td class="border border-gray-300 px-4 py-2">{{ p.title }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ p.status }}</td>
+                <td class="border border-gray-300 px-4 py-2">${{ p.price }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ p.download_count }}</td>
+                <td class="border border-gray-300 px-4 py-2 flex items-center justify-between">
+                    <a href="{% url 'product_detail' p.id %}" class="text-green-600 hover:underline">View</a>
+                    <a href="{% url 'admin_product_delete' p.id %}" class="text-red-600 hover:underline">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-4 text-gray-500">No products found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
