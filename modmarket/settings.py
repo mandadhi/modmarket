@@ -20,14 +20,7 @@ DEBUG = env.bool("DEBUG", default=False)
 
 # Comma-separated list in env, e.g.:
 # ALLOWED_HOSTS=modmarket-production.up.railway.app,localhost,127.0.0.1
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
-
-# CSRF trusted origins must include the scheme; use comma-separated env:
-# CSRF_TRUSTED_ORIGINS=https://modmarket-production.up.railway.app
-CSRF_TRUSTED_ORIGINS = env.list(
-    "CSRF_TRUSTED_ORIGINS",
-    default=[f"https://{h}" for h in ALLOWED_HOSTS if "." in h],
-)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost","modmarket.herokuapp.com","Harsha1715.pythonanywhere.com"])
 
 # Tell Django it's behind a proxy that sets X-Forwarded-Proto
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -50,7 +43,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # serve static in prod
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -78,14 +70,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "modmarket.wsgi.application"
 
-# ── Django DB (auth/sessions/admin) via Postgres on Railway ────────────────────
 DATABASES = {
-    "default": dj_database_url.config(
-        env="DATABASE_URL",
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",  # local fallback
-        conn_max_age=600,
-        ssl_require=True,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # ── MongoDB (your app data/files) ──────────────────────────────────────────────
@@ -119,7 +108,6 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
