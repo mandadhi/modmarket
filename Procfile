@@ -1,1 +1,1 @@
-web: gunicorn modmarket.wsgi --log-file -
+web: gunicorn modmarket.wsgi
