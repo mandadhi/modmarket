@@ -4,6 +4,38 @@ from django.forms import formset_factory
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.forms import SetPasswordForm
+
+
+class StyledPasswordResetForm(PasswordResetForm):
+    email=forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+        "class":"w-full border border-black border-2 rounded-md px-2 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500",
+        "placeholder":"Email",
+    }))
+
+class StyledSetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(
+        label="New password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "w-full mb-4 p-3 border rounded-lg focus:ring focus:ring-purple-300",
+                "placeholder": "Enter new password",
+                "value":"",
+            }
+        )
+    )
+    new_password2 = forms.CharField(
+        label="Confirm password",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "w-full p-3 border rounded-lg focus:ring focus:ring-purple-300",
+                "placeholder": "Confirm new password",
+            }
+        )
+    )
 
 class StyledAuthenticationForm(AuthenticationForm):
     username = forms.CharField(
@@ -22,7 +54,7 @@ class StyledAuthenticationForm(AuthenticationForm):
 class StyledUserCreationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ("username", "password1", "password2")
+        fields = ("username", "password1", "password2","email")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -143,8 +143,6 @@ def home(request):
             categories.append({"category": val["name"]})
         elif isinstance(val, str):
             categories.append({"category": val})
-
-    # attach developer + user info
     all_products = featured + recent
     for p in all_products:
         p_id = p.get("_id")
@@ -212,8 +210,6 @@ def product_list(request):
     total = products_count(q)
     skip = (page - 1) * per_page
     items = products_find(q, [(sort_field, sort_dir)], skip, per_page)
-
-    # Normalize products
     for p in items:
         p["id"] = str(p["_id"])
         dev = db.developers.find_one({"_id": p.get("developer_id")})
@@ -224,8 +220,6 @@ def product_list(request):
                 usr["id"] = str(usr["_id"])
                 dev["user"] = usr
             p["developer"] = dev
-
-        # Categories: handle list of category names
         if p.get("category"):
             cat_objs = list(db.categories.find({"category": {"$in": p["category"]}}))
             categories_list = []
@@ -270,8 +264,6 @@ def product_detail(request, pk):
     if request.user.is_authenticated:
         profile, _ = developer_get_or_create(request.user.id)
         is_admin = request.user.is_staff
-
-    # Fetch product
     if is_admin:
         product = db.products.find_one({"_id": pk})
     else:
@@ -284,8 +276,6 @@ def product_detail(request, pk):
         return redirect("home")
 
     product['id'] = product['_id']
-
-    # Fetch related data
     license = db.licenses.find_one({'product_id': product['_id']})
     files = list(db.product_files.find({"product_id": product["_id"]}))
     product["files"] = []
@@ -295,13 +285,11 @@ def product_detail(request, pk):
         f["id"] = f["_id"]
         f["file_type_label"] = FILE_TYPE_LABELS.get(f.get("file_type"), f.get("file_type"))
         product["files"].append(f)
-
-        # Only include images as screenshots
         if f.get("content_type", "").startswith("image/"):
             product["screenshots"].append({
-                "id": f["_id"],          # string
+                "id": f["_id"],         
                 "filename": f["filename"],
-                "path": f["path"],       # string ObjectId for template
+                "path": f["path"],
                 "content_type": f.get("content_type"),
                 "file_type_label": f.get("file_type_label"),
                 "size": f.get("size")
@@ -338,8 +326,6 @@ def download_product(request, pk):
         return redirect("login")
 
     profile, _ = developer_get_or_create(request.user.id)
-
-    # Fetch product: allow owner to download even if pending
     product = db.products.find_one({
         "$or": [
             {"_id": pk, "status": "approved"},
@@ -350,14 +336,10 @@ def download_product(request, pk):
     if not product:
         messages.error(request, "Product not available for download.")
         return redirect("home")
-
-    # Fetch main product file
     main_file = db.product_files.find_one({"product_id": pk, "file_type": "main"})
     if not main_file:
         messages.error(request, "Main product file not found.")
         return redirect("product_detail", pk=pk)
-
-    # Serve file from GridFS
     return serve_file(file_id=main_file["path"], bucket_name="products", inline=False)
 
 # ------------------------
@@ -384,19 +366,11 @@ def register(request):
 @login_required
 def developer_dashboard(request):
     profile, _ = developer_get_or_create(request.user.id)
-
-    # Count total products for this developer
     total_products_count = db.products.count_documents({"developer_id": profile["_id"]})
-
-    # Optionally, fetch the products to display
     my_products = list(db.products.find({"developer_id": profile["_id"]}).sort("created_at", -1))
     for p in my_products:
         p['id'] = p['_id']
-
-    # Count total downloads
     total_downloads = sum(p.get("download_count", 0) for p in my_products)
-
-    # Count pending products
     pending_products = db.products.count_documents({
         "developer_id": profile["_id"],
         "status": "pending"
@@ -454,15 +428,11 @@ def upload_product(request):
 
         if form.is_valid() and file_formset.is_valid():
             data = form.cleaned_data
-
-            # --- Handle categories safely ---
             categories = data.get("category", [])
             if isinstance(categories, str):
                 categories = [c.strip() for c in categories.split(",") if c.strip()]
             else:
                 categories = [str(c).strip() for c in categories if c and str(c).strip()]
-
-            # --- Build product payload ---
             product_payload = {
                 "title": data["title"],
                 "description": data["description"],
@@ -477,21 +447,13 @@ def upload_product(request):
                 "user_id": user["_id"],
                 "tags": [t.strip() for t in data.get("tags", "").split(",") if t.strip()]
             }
-
-            # --- Handle thumbnail ---
             if data.get("thumbnail"):
                 saved = _save_file_to_gridfs(data["thumbnail"], "thumbnails")
                 product_payload["thumbnail_path"] = saved["file_id"]
                 product_payload["thumbnail_bucket"] = saved["bucket"]
-
-            # --- Create product in DB ---
             product_id = product_create(product_payload)
-
-            # --- Create categories ---
             if categories:
                 category_create(product_id, categories)
-
-            # --- Handle license file ---
             if data.get("license_file"):
                 saved_license = _save_file_to_gridfs(data["license_file"], "license")
                 license_create(
@@ -501,8 +463,6 @@ def upload_product(request):
                     size=saved_license["size"],
                     bucket=saved_license["bucket"]
                 )
-
-            # --- Handle multiple product files ---
             for fform in file_formset:
                 if fform.cleaned_data and not fform.cleaned_data.get("DELETE"):
                     uploaded_file = fform.cleaned_data.get("file")
@@ -540,23 +500,18 @@ def add_review(request, pk):
     product = product_get(pk, status="approved")
     if not product:
         raise Http404("Product not found.")
-
-    # prevent duplicate review
     if review_get_by_user(request.user.id, pk):
         messages.error(request, "You have already reviewed this product.")
         return redirect("product_detail", pk=pk)
 
     form = ReviewForm(request.POST)
     if form.is_valid():
-        # add new review
         review_add(
             request.user.id,
             pk,
             int(form.cleaned_data["rating"]),
             form.cleaned_data.get("comment", "")
         )
-
-        # recalc average + count
         reviews = list(db.reviews.find({"product_id": ObjectId(pk)}))
         if reviews:
             total = sum(r["rating"] for r in reviews)
@@ -565,8 +520,6 @@ def add_review(request, pk):
         else:
             avg = 0
             count = 0
-
-        # update product with avg + count
         db.products.update_one(
             {"_id": pk},
             {"$set": {
@@ -609,11 +562,7 @@ def moderate_product(request, pk):
         return redirect("moderation_queue")
 
     developer_id = product["developer_id"]
-
-    # Fetch developer info
     product["developer"] = db.developers.find_one({"_id": developer_id})
-
-    # Fetch license and files
     license = db.licenses.find_one({'product_id': product['_id']})
     files = list(db.product_files.find({"product_id": product["_id"]}))
     for f in files:
@@ -623,8 +572,6 @@ def moderate_product(request, pk):
     product["license_file"] = license
     product["user_details"] = db.users.find_one({"_id": product["user_id"]})
     product["product_type_label"] = TYPE_LABELS.get(product.get("product_type"), product.get("product_type"))
-
-    # --- Developer product counts ---
     total_products = db.products.count_documents({"developer_id": developer_id})
     approved_products = db.products.count_documents({"developer_id": developer_id, "status": "approved"})
     pending_products = db.products.count_documents({"developer_id": developer_id, "status": "pending"})

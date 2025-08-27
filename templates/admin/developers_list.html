@@ -8,6 +8,7 @@
         <thead class="bg-gray-200">
             <tr>
                 <th class="border border-gray-300 px-4 py-2">Username</th>
+                <th class="border border-gray-300 px-4 py-2">Email</th>
                 <th class="border border-gray-300 px-4 py-2">Company</th>
                 <th class="border border-gray-300 px-4 py-2">User ID</th>
                 <th class="border border-gray-300 px-4 py-2">Object ID</th>
@@ -19,6 +20,7 @@
             {% for d in developers %}
             <tr class="hover:bg-gray-50">
                 <td class="border border-gray-300 px-4 py-2">{{ d.user.username|default:'N/A' }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ d.user.email|default:'N/A' }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ d.company_name|default:'anonymous' }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ d.user_id }}</td>
                 <td class="border border-gray-300 px-4 py-2">{{ d.id }}</td>
