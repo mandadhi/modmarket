@@ -13,8 +13,7 @@
 7.  [Usage / Getting Started](#usage--getting-started)
 8.  [Configuration](#configuration)
 9.  [Contributing](#contributing)
-10. [License](#license)
-11. [Contact](#contact)
+10. [Contact](#contact)
 
 ## Description
 
@@ -137,21 +136,38 @@ A web application built with Django, utilizing MongoDB and PostgreSQL for databa
     python manage.py runserver
     ```
 
-## Configuration
 
-*   Database settings (MongoDB and PostgreSQL) should be configured in the `settings.py` file within the `modmarket` directory.
-*   Environment variables can be set for sensitive information (e.g., database passwords).
+## ⚙️ Database Configuration
 
-## Contributing
+### 1. Relational Database (SQLite / PostgreSQL)
+- By default, the project uses **SQLite** for local development:
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+```
 
-Please make sure to update tests as appropriate.
+For production, you can use PostgreSQL by setting the DATABASE_URL environment variable:
 
-## License
+if not DEBUG:
+    DATABASE_URL = env("DATABASE_URL", default=None)
+    if DATABASE_URL:
+        DATABASES["default"] = dj_database_url.config(default=DATABASE_URL)
 
-<!-- TODO: Add license information.  Check for a LICENSE file in the repository. -->
+### 2.MongoDB is used to store products, categories, developers, and reviews.
+Set environment variables in .env or on your server:
+
+from pymongo import MongoClient
+def get_mongo_db():
+    client = MongoClient(MONGO_URI)
+    return client[MONGO_DB_NAME]
 
 ## Contact
 
-Your Name - projectlink - email@example.com
+**Harsha Vardhan Reddy**  
+- Deployed Link: [https://modmarket-production.up.railway.app](https://modmarket-production.up.railway.app/)  
+- Email: [harshavardhanreddy1715@gmail.com](mailto:harshavardhanreddy1715@gmail.com)
