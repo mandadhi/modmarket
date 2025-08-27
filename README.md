@@ -11,9 +11,8 @@
 5.  [Prerequisites](#prerequisites)
 6.  [Installation](#installation)
 7.  [Usage / Getting Started](#usage--getting-started)
-8.  [Configuration](#configuration)
-9.  [Contributing](#contributing)
-10. [Contact](#contact)
+8.  [Database Configuration](#database-configuration)
+9.  [Contact](#contact)
 
 ## Description
 
